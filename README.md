@@ -10,4 +10,5 @@ Type -? or -help to know how use it
 
 
 V1.7 : 20200106 : Correction typo par GiDom
+
 V1.6 : 20191230 : Transformation en fonctions par iWils
