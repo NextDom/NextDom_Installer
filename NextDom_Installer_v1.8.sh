@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#2020-01-08 : v1.8 : ajout compatibilité RPI
 #2020-01-05 : v1.7 : Correction Typo
 #2019-12-30 : v1.6 : mise en place de fonction
 #2019-11-26 : v1.5 : correction de l'ordre d'installation des dépendances.
@@ -57,7 +58,7 @@ function basenxt {
 
 	apt update
 	apt install -y software-properties-common gnupg wget ca-certificates
-	add-apt-repository non-free
+	sed '/non-free/!s/main/main non-free/' /etc/apt/sources.list
 	wget -qO -  http://debian.nextdom.org/debian/nextdom.gpg.key  | apt-key add -
 	echo "deb  http://debian.nextdom.org/debian  nextdom main" >/etc/apt/sources.list.d/nextdom.list
 	apt update
