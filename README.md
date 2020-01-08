@@ -12,6 +12,6 @@ To run :
 Type -? or -help to know how use it
 
 
-v1.8 : 20200108 : Add RPI compatibility
+v1.8 : 20200108 : Add RPI compatibility  
 V1.7 : 20200106 : Correction typo par GiDom  
-V1.6 : 20191230 : Transformation en fonctions par iWils
+V1.6 : 20191230 : Transformation en fonctions par iWils  
