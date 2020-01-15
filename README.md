@@ -3,7 +3,7 @@ Script to automaticaly install NextDom from APT or GIT
 
 Be carreful, it will wipe all previous data and backup of NextDom
 
-To run : 
+To run (!!! as root !!! : 
 
  `$ wget https://raw.githubusercontent.com/NextDom/NextDom_Installer/master/NextDom_Installer_v1.8.sh`  
  `$ chmod +x NextDom_Installer_v1.8.sh`  
