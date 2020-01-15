@@ -7,7 +7,7 @@ To run :
 
  `$ wget https://raw.githubusercontent.com/NextDom/NextDom_Installer/master/NextDom_Installer_v1.8.sh`  
  `$ chmod +x NextDom_Installer_v1.8.sh`  
- `$ ./NextDom_Installer_v1.8.sh`  
+ `$ sudo ./NextDom_Installer_v1.8.sh`  
 
 Type -? or -help to know how use it
 
