@@ -112,13 +112,11 @@ CHECK_RETURN_KO "${?}" "Probleme lors de la verification des variables APT et Sw
 
 function INIT_NEXDOM_ENV() {
 	echo "Création dossier HTML"
-	mkdir /var/www/html 2>/dev/null
-
 	apt update
 	apt install -y software-properties-common gnupg wget ca-certificates
 	sed '/non-free/!s/main/main non-free/' /etc/apt/sources.list
 	wget -qO - http://debian.nextdom.org/debian/nextdom.gpg.key | apt-key add -
-	echo "deb   "${1}"  nextdom main" >/etc/apt/sources.list.d/nextdom.list
+	echo "deb ${1} nextdom main" >/etc/apt/sources.list.d/nextdom.list
 	apt update
 	set -e
 	apt -y install nextdom-common
@@ -128,7 +126,7 @@ function CHECK_APT_CONF() {
 		sed '/non-free/!s/main/main non-free/' /etc/apt/sources.list
 		CHECK_RETURN_KO "${?}" "Probleme lors de la modification /etc/apt/sources.list"
 		wget -qO - http://debian.nextdom.org/debian/nextdom.gpg.key | apt-key add -
-		echo "deb  "${1}" nextdom main" >/etc/apt/sources.list.d/nextdom.list 1>/dev/null
+		echo "deb ${1} nextdom main" >/etc/apt/sources.list.d/nextdom.list
 		CHECK_RETURN_KO "${?}" "Probleme lors de la creation du fichier : ${APT_NEXTDOM_CONF}"
 		apt update
 		CHECK_RETURN_KO "${?}" "Probleme lors de l'apt update"
@@ -150,15 +148,6 @@ function INSTALL_NEXTDOM_DEV() {
 	apt install -y nextdom
 }
 function INSTALL_NEXTDOM_GIT() {
-	
-	apt update
-	apt install -y software-properties-common gnupg wget ca-certificates
-	sed '/non-free/!s/main/main non-free/' /etc/apt/sources.list
-	wget -qO - http://debian.nextdom.org/debian/nextdom.gpg.key | apt-key add -
-	echo "deb   "${1}"  nextdom main" >/etc/apt/sources.list.d/nextdom.list
-	apt update
-	set -e
-	apt -y install nextdom-common
 	git clone --single-branch --branch "${GIT_NEXTDOM_BRANCHE}" "${GIT_NEXTDOM_URL}" "${NEXTDOM_HTML}"
 	CHECK_RETURN_KO "${?}" "Probleme lors du git clone pour la branche "${GIT_NEXTDOM_BRANCHE}", du depot "${GIT_NEXTDOM_URL}""
 	git config core.fileMode false
@@ -166,14 +155,6 @@ function INSTALL_NEXTDOM_GIT() {
 	CHECK_RETURN_KO "${?}" "Probleme lors du postinstall"
 }
 function NEXTDOM_SWITCH_BRANCHE() {
-	apt update
-	apt install -y software-properties-common gnupg wget ca-certificates
-	sed '/non-free/!s/main/main non-free/' /etc/apt/sources.list
-	wget -qO - http://debian.nextdom.org/debian/nextdom.gpg.key | apt-key add -
-	echo "deb   "${1}"  nextdom main" >/etc/apt/sources.list.d/nextdom.list
-	apt update
-	set -e
-	apt -y install nextdom-common
 	git clone --single-branch --branch "${GIT_NEXTDOM_BRANCHE}" "${GIT_NEXTDOM_URL}" "${NEXTDOM_HTML}"
 	git config core.fileMode false
 	echo "passage à la branche " "$2"
@@ -232,9 +213,11 @@ case "${NEXTDOM_TYPE_INSTALL}" in
 
 	;;
 2)
+	INIT_NEXDOM_ENV "${APT_NEXTDOM_DEPOT_OFI}"
 	INSTALL_NEXTDOM_GIT
 	;;
 3)
+	INIT_NEXDOM_ENV "${APT_NEXTDOM_DEPOT_OFI}"
 	NEXTDOM_SWITCH_BRANCHE
 	;;
 *)
