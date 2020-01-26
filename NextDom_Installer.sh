@@ -125,62 +125,56 @@ function INIT_NEXDOM_ENV() {
 }
 
 function CHECK_APT_CONF() {
-	if [ -f "${APT_NEXTDOM_CONF}" ]; then
-		echo file exists
-	else
 		sed '/non-free/!s/main/main non-free/' /etc/apt/sources.list
 		CHECK_RETURN_KO "${?}" "Probleme lors de la modification /etc/apt/sources.list"
 		wget -qO - http://debian.nextdom.org/debian/nextdom.gpg.key | apt-key add -
-		echo "deb  http://debian.nextdom.org/debian  nextdom main" >/etc/apt/sources.list.d/nextdom.list 1>/dev/null
+		echo "deb  "${1}" nextdom main" >/etc/apt/sources.list.d/nextdom.list 1>/dev/null
 		CHECK_RETURN_KO "${?}" "Probleme lors de la creation du fichier : ${APT_NEXTDOM_CONF}"
 		apt update
 		CHECK_RETURN_KO "${?}" "Probleme lors de l'apt update"
-	fi
 }
 
 function INSTALL_NEXTDOM_OFI() {
-	DEL_NEXTDOM_DIR
-	REMOVE_NEXTDOM_APT
 	#INIT_NEXDOM_ENV "${APT_NEXTDOM_DEPOT_OFI}"
 	set -e
 	apt install -y nextdom
 }
 function INSTALL_NEXTDOM_NGT() {
-	DEL_NEXTDOM_DIR
-	REMOVE_NEXTDOM_APT
 	#INIT_NEXDOM_ENV "${APT_NEXTDOM_DEPOT_NGT}"
 	set -e
 	apt install -y nextdom
 }
 function INSTALL_NEXTDOM_DEV() {
-	DEL_NEXTDOM_DIR
-	REMOVE_NEXTDOM_APT
 	#INIT_NEXDOM_ENV "${APT_NEXTDOM_DEPOT_DEV}"
 	set -e
 	apt install -y nextdom
 }
 function INSTALL_NEXTDOM_GIT() {
-	DEL_NEXTDOM_DIR
-	REMOVE_NEXTDOM_APT
-	INIT_NEXDOM_ENV "$1"
-
-	cd ${NEXTDOM_HTML} || {
-		echo "Echec de deplacement dans le dossier : "${NEXTDOM_HTML}
-		exit 1
-	}
-	git clone https://github.com/NextDom/nextdom-core .
+	
+	apt update
+	apt install -y software-properties-common gnupg wget ca-certificates
+	sed '/non-free/!s/main/main non-free/' /etc/apt/sources.list
+	wget -qO - http://debian.nextdom.org/debian/nextdom.gpg.key | apt-key add -
+	echo "deb   "${1}"  nextdom main" >/etc/apt/sources.list.d/nextdom.list
+	apt update
+	set -e
+	apt -y install nextdom-common
+	git clone --single-branch --branch "${GIT_NEXTDOM_BRANCHE}" "${GIT_NEXTDOM_URL}" "${NEXTDOM_HTML}"
+	CHECK_RETURN_KO "${?}" "Probleme lors du git clone pour la branche "${GIT_NEXTDOM_BRANCHE}", du depot "${GIT_NEXTDOM_URL}""
 	git config core.fileMode false
 	./install/postinst
+	CHECK_RETURN_KO "${?}" "Probleme lors du postinstall"
 }
 function NEXTDOM_SWITCH_BRANCHE() {
-	DEL_NEXTDOM_DIR
-	REMOVE_NEXTDOM_APT
-	INIT_NEXDOM_ENV "$1"
-	cd ${NEXTDOM_HTML} || {
-		echo "Echec de deplacement dans le dossier : "${NEXTDOM_HTML}
-		exit 1
-	}
-	git clone https://github.com/NextDom/nextdom-core .
+	apt update
+	apt install -y software-properties-common gnupg wget ca-certificates
+	sed '/non-free/!s/main/main non-free/' /etc/apt/sources.list
+	wget -qO - http://debian.nextdom.org/debian/nextdom.gpg.key | apt-key add -
+	echo "deb   "${1}"  nextdom main" >/etc/apt/sources.list.d/nextdom.list
+	apt update
+	set -e
+	apt -y install nextdom-common
+	git clone --single-branch --branch "${GIT_NEXTDOM_BRANCHE}" "${GIT_NEXTDOM_URL}" "${NEXTDOM_HTML}"
 	git config core.fileMode false
 	echo "passage à la branche " "$2"
 	git checkout "$2"
@@ -220,16 +214,19 @@ case "${NEXTDOM_TYPE_INSTALL}" in
 1)
 	case "${APT_INSTALL_TYPE}" in
 	OFI)
+		CHECK_APT_CONF "${APT_NEXTDOM_DEPOT_OFI}"
 		INSTALL_NEXTDOM_OFI
 		;;
 	DEV)
+		CHECK_APT_CONF "${APT_NEXTDOM_DEPOT_DEV}"
 		INSTALL_NEXTDOM_DEV
 		;;
 	NGT)
+		CHECK_APT_CONF "${APT_NEXTDOM_DEPOT_NGT}"
 		INSTALL_NEXTDOM_NGT
 		;;
 	*)
-		echo "default"
+		echo "apt ko"
 		;;
 	esac
 
