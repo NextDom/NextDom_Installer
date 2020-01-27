@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#2020-01-08 : v1.9 : modification chemin pout tirage des sources
 #2020-01-08 : v1.8 : ajout compatibilité RPI
 #2020-01-05 : v1.7 : Correction Typo
 #2019-12-30 : v1.6 : mise en place de fonction
@@ -34,13 +35,13 @@ function cleanfld {
 }
 
 function cleannxt {
-    apt purge -y nextdom
+    apt purge -y nextdom*
     apt autoremove -y
 }
 
 function basenxt {
-	echo "Création dossier HTML"
-	mkdir /var/www/html 2>/dev/null
+	echo "Création dossier NextDom"
+	mkdir /usr/share/nextdom 2>/dev/null
 
 	if [[ $1 == "-git" ]]; then
 		echo ""
@@ -70,7 +71,7 @@ if [[ $1 == "-git" ]]; then
 	cleannxt
 	basenxt $1
 
-	cd /var/www/html/
+	cd /usr/share/nextdom
 	git clone  https://github.com/NextDom/nextdom-core .
 	git config core.fileMode false
 	./install/postinst
@@ -108,7 +109,7 @@ if [[ $1 == "-gitbr" ]]; then
 	cleannxt
 	basenxt $1
 
-	cd /var/www/html
+	cd /usr/share/nextdom
 	git clone  https://github.com/NextDom/nextdom-core .
 	git config core.fileMode false
 	echo "passage à la branche " $2
@@ -119,7 +120,7 @@ fi
 
 if [[ $1 == "-?" ]] || [[ $1 == "-help" ]]; then
 		echo ""
-		echo "NextDom Installer tool v1.6"
+		echo "NextDom Installer tool v1.9"
 		echo ""
 		echo ""
 		echo "		-apt		: Installation via apt, dépôt officiel"
