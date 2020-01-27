@@ -10,7 +10,7 @@ NEXTDOM_LOG="/var/log/nextdom"
 NEXTDOM_LIB="/var/lib/nextdom"
 NEXTDOM_HTML="/var/www/html"
 NEXTDOM_SHARE="/usr/share/nextdom"
-NEXTDOM_TMP="/tmp/nextdom/"
+NEXTDOM_TMP="/tmp/nextdom"
 APT_INSTALL_TYPE="NA"
 APT_NEXTDOM_CONF="/etc/apt/sources.list.d/nextdom.list"
 GIT_NEXTDOM_URL="NA"
@@ -20,7 +20,6 @@ NEXTDOM_TYPE_INSTALL="0"
 APT_NEXTDOM_DEPOT_OFI="http://debian.nextdom.org/debian"
 APT_NEXTDOM_DEPOT_NGT="http://debian-nightly.nextdom.org/debian"
 APT_NEXTDOM_DEPOT_DEV="http://debian-dev.nextdom.org/debian"
-
 
 function CHECK_RETURN_KO() {
 	# Function. Parameter 1 is the return code
@@ -111,7 +110,6 @@ fi
 CHECK_RETURN_KO "${?}" "Probleme lors de la verification des variables APT et Switch"
 
 function INIT_NEXDOM_ENV() {
-	echo "Création dossier HTML"
 	apt update
 	apt install -y software-properties-common gnupg wget ca-certificates
 	sed '/non-free/!s/main/main non-free/' /etc/apt/sources.list
@@ -123,13 +121,13 @@ function INIT_NEXDOM_ENV() {
 }
 
 function CHECK_APT_CONF() {
-		sed '/non-free/!s/main/main non-free/' /etc/apt/sources.list
-		CHECK_RETURN_KO "${?}" "Probleme lors de la modification /etc/apt/sources.list"
-		wget -qO - http://debian.nextdom.org/debian/nextdom.gpg.key | apt-key add -
-		echo "deb ${1} nextdom main" >/etc/apt/sources.list.d/nextdom.list
-		CHECK_RETURN_KO "${?}" "Probleme lors de la creation du fichier : ${APT_NEXTDOM_CONF}"
-		apt update
-		CHECK_RETURN_KO "${?}" "Probleme lors de l'apt update"
+	sed '/non-free/!s/main/main non-free/' /etc/apt/sources.list
+	CHECK_RETURN_KO "${?}" "Probleme lors de la modification /etc/apt/sources.list"
+	wget -qO - http://debian.nextdom.org/debian/nextdom.gpg.key | apt-key add -
+	echo "deb ${1} nextdom main" >/etc/apt/sources.list.d/nextdom.list
+	CHECK_RETURN_KO "${?}" "Probleme lors de la creation du fichier : ${APT_NEXTDOM_CONF}"
+	apt update
+	CHECK_RETURN_KO "${?}" "Probleme lors de l'apt update"
 }
 
 function INSTALL_NEXTDOM_OFI() {
@@ -150,39 +148,29 @@ function INSTALL_NEXTDOM_DEV() {
 function INSTALL_NEXTDOM_GIT() {
 	git clone --single-branch --branch "${GIT_NEXTDOM_BRANCHE}" "${GIT_NEXTDOM_URL}" "${NEXTDOM_HTML}"
 	CHECK_RETURN_KO "${?}" "Probleme lors du git clone pour la branche "${GIT_NEXTDOM_BRANCHE}", du depot "${GIT_NEXTDOM_URL}""
-	git config core.fileMode false
-	./install/postinst
+	git config --global core.fileMode false
+	."${NEXTDOM_HTML}"/install/postinst
 	CHECK_RETURN_KO "${?}" "Probleme lors du postinstall"
 }
+
 function NEXTDOM_SWITCH_BRANCHE() {
 	git clone --single-branch --branch "${GIT_NEXTDOM_BRANCHE}" "${GIT_NEXTDOM_URL}" "${NEXTDOM_HTML}"
 	git config core.fileMode false
 	echo "passage à la branche " "$2"
 	git checkout "$2"
 	git reset --hard origin/"$2"
-	./install/postinst
+	."${NEXTDOM_HTML}"/install/postinst
 }
 
 function DEL_NEXTDOM_DIR() {
-	rm -Rf ${NEXTDOM_LOG} 2>/dev/null
-	CHECK_RETURN_KO "${?}" "Probleme lors de la suppression du repertoire : ${NEXTDOM_LOG}"
-	echo "Dossier /var/log/nextdom* supprimé"
 
-	rm -Rf ${NEXTDOM_LIB} 2>/dev/null
-	CHECK_RETURN_KO "${?}" "Probleme lors de la suppression du repertoire : ${NEXTDOM_LIB}"
-	echo "Dossier /var/lib/nextdom* supprimé"
-
-	rm -Rf ${NEXTDOM_HTML} 2>/dev/null
-	CHECK_RETURN_KO "${?}" "Probleme lors de la suppression du repertoire : ${NEXTDOM_HTML}"
-	echo "Dossier /var/www/html* supprimé"
-
-	rm -Rf ${NEXTDOM_SHARE} 2>/dev/null
-	CHECK_RETURN_KO "${?}" "Probleme lors de la suppression du repertoire : ${NEXTDOM_SHARE}"
-	echo "Dossier /usr/share/nextdom* supprimé"
-
-	rm -Rf ${NEXTDOM_TMP} 2>/dev/null
-	CHECK_RETURN_KO "${?}" "Probleme lors de la suppression du repertoire : ${NEXTDOM_TMP}"
-	echo "Suppression du dossier tmp nextdom"
+	for RM_NEXTDOM_DIR in ${NEXTDOM_LOG} ${NEXTDOM_LIB} ${NEXTDOM_HTML} ${NEXTDOM_SHARE} ${NEXTDOM_TMP}; do
+		if [ -d ${RM_NEXTDOM_DIR} ]; then
+			rm -Rf ${RM_NEXTDOM_DIR}
+			echo "Repertoire  ${RM_NEXTDOM_DIR} : supprime"
+			CHECK_RETURN_KO "${?}" "Probleme lors de la suppression du repertoire : ${RM_NEXTDOM_DIR}"
+		fi
+	done
 }
 
 function REMOVE_NEXTDOM_APT() {
@@ -224,6 +212,5 @@ case "${NEXTDOM_TYPE_INSTALL}" in
 	echo "default"
 	;;
 esac
-
 
 exit
