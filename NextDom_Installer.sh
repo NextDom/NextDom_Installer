@@ -34,18 +34,18 @@ function CHECK_RETURN_KO() {
 function usage() {
 
 	echo ""
-	echo "NextDom Installer tool " ${VERSION_SCRIPT}
+	echo "		 NextDom Installer tool " ${VERSION_SCRIPT}
 	echo ""
 	echo ""
-	echo "		-a OFI		: Installation via apt, dépôt officiel"
-	echo "		-a NGT		: version nightly"
-	echo "		-a DEV		: version dépôt develop"
+	echo "		-a OFI					: Installation via apt, dépôt officiel"
+	echo "		-a NGT					: version nightly"
+	echo "		-a DEV					: version dépôt develop"
 	echo ""
-	echo "		-git		: Installation via git"
-	echo ""
+	echo "		-g						: Installation via git"
 	echo "		-b NOM_DE_LA_BRANCHE	: Changement de branche git"
+	echo "		-r YES					:	supprime tous les composants Nextdom & DATA"
 	echo ""
-	echo "		-? ou -help	: afficher l'aide et quitter"
+	echo "		-? ou -help				: afficher l'aide et quitter"
 
 }
 
@@ -156,9 +156,9 @@ function INSTALL_NEXTDOM_GIT() {
 function NEXTDOM_SWITCH_BRANCHE() {
 	git clone --single-branch --branch "${GIT_NEXTDOM_BRANCHE}" "${GIT_NEXTDOM_URL}" "${NEXTDOM_HTML}"
 	git config core.fileMode false
-	echo "passage à la branche " "$2"
-	git checkout "$2"
-	git reset --hard origin/"$2"
+	echo "passage à la branche " "${GIT_NEXTDOM_BRANCHE}"
+	git checkout "${GIT_NEXTDOM_BRANCHE}"
+	git reset --hard origin/"${GIT_NEXTDOM_BRANCHE}"
 	."${NEXTDOM_HTML}"/install/postinst
 }
 
