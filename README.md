@@ -17,6 +17,7 @@ V2.0 beta : USE A OWN RISK !!!!! :20200128
 - Refonte globale du script
 - utilisation de variable globale pour faciliter la maintenabilité
 - Changement de l'appel du script:
+
 .NextDom_Installer.sh -a OFI|NGT|DEV -g url_github -b BRANCHE -s BRANCHE -r YES -i CHEMIN_BACKUP
  -a) : Installation via apt pour les depots Officiels (OFI), dev (DEV), et nigthly (NGT)
  -g & -b ) : Indique l url github du projet et de la branche a installer
