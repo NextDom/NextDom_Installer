@@ -5,7 +5,7 @@
 #2019-12-30 : v1.6 : mise en place de fonction
 #2019-11-26 : v1.5 : correction de l'ordre d'installation des dépendances.
 #2019-11-25 : v1.3 : ajout dépôt pour install git + clé
-VERSION_SCRIPT="V1.9"
+VERSION_SCRIPT="V2.0 BETA USE AT OWN RISK"
 NEXTDOM_LOG="/var/log/nextdom"
 NEXTDOM_LIB="/var/lib/nextdom"
 NEXTDOM_HTML="/var/www/html"
@@ -37,15 +37,15 @@ function usage() {
 	echo "		 NextDom Installer tool " ${VERSION_SCRIPT}
 	echo ""
 	echo ""
-	echo "		-a OFI					: Installation via apt, dépôt officiel"
-	echo "		-a NGT					: version nightly"
-	echo "		-a DEV					: version dépôt develop"
+	echo "	NextDom_Installer.sh -a OFI|NGT|DEV -g url_github -b BRANCHE -s BRANCHE -r YES -i CHEMIN_BACKUP"
 	echo ""
-	echo "		-g						: Installation via git"
-	echo "		-b NOM_DE_LA_BRANCHE	: Changement de branche git"
-	echo "		-r YES					:	supprime tous les composants Nextdom & DATA"
+	echo "		-a) : Installation via apt pour les depots Officiels (OFI), dev (DEV), et nigthly (NGT)"
+	echo "		-g & -b ) : Indique l url github du projet et de la branche a installer"
+	echo "		-s) : Branche du projet sur laquelle l utilisateur veut switcher"
+	echo "      -r) : Suppression de tout les composants Nextdom et data (Comming Soon)"
+	echo "      -i) : Restauration de backup (Coming Soon)"
 	echo ""
-	echo "		-? ou -help				: afficher l'aide et quitter"
+	echo "		-? ou -help				: Affiche l'aide et quitter"
 
 }
 
@@ -84,8 +84,6 @@ if { [ "${GIT_NEXTDOM_URL}" != "NA" ] || [ "${GIT_NEXTDOM_BRANCHE}" != "NA" ]; }
 	echo "soit git soit apt mais pas les deux"
 	usage
 	exit 1
-else
-	echo "bingo"
 fi
 CHECK_RETURN_KO "${?}" "Probleme lors de la verification des variables APT et GIT"
 
@@ -94,8 +92,6 @@ if { [ "${GIT_NEXTDOM_URL}" != "NA" ] || [ "${GIT_NEXTDOM_BRANCHE}" != "NA" ]; }
 	echo "soit git soit switch"
 	usage
 	exit 1
-else
-	echo "bingo"
 fi
 CHECK_RETURN_KO "${?}" "Probleme lors de la verification des variables GIT et Switch"
 
@@ -104,8 +100,6 @@ if [ "${APT_INSTALL_TYPE}" != "NA" ] && [ "${GIT_SWITCH_BRANCHE}" != "NA" ]; the
 	echo "soit apt soit switch"
 	usage
 	exit 1
-else
-	echo "bingo"
 fi
 CHECK_RETURN_KO "${?}" "Probleme lors de la verification des variables APT et Switch"
 
