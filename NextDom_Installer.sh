@@ -41,7 +41,7 @@ function usage() {
 	echo ""
 	echo "		-a) : Installation via apt pour les depots Officiels (OFI), dev (DEV), et nigthly (NGT)"
 	echo "		-g & -b ) : Indique l url github du projet et de la branche a installer"
-	echo "		-s) : Branche du projet sur laquelle l utilisateur veut switcher"
+	echo "		-s) : La branche du projet sur laquelle l utilisateur veut switcher"
 	echo "      -r) : Suppression de tout les composants Nextdom et data (Comming Soon)"
 	echo "      -i) : Restauration de backup (Coming Soon)"
 	echo ""
