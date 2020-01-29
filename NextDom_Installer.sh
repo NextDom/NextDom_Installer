@@ -107,14 +107,18 @@ function INIT_NEXDOM_ENV() {
 	apt update
 	apt install -y software-properties-common gnupg wget ca-certificates
 	sed '/non-free/!s/main/main non-free/' /etc/apt/sources.list
+	CHECK_RETURN_KO "${?}" "Probleme lors de la modification /etc/apt/sources.list"
 	wget -qO - http://debian.nextdom.org/debian/nextdom.gpg.key | apt-key add -
 	echo "deb ${1} nextdom main" >/etc/apt/sources.list.d/nextdom.list
+	CHECK_RETURN_KO "${?}" "Probleme lors de la creation du fichier : ${APT_NEXTDOM_CONF}"
 	apt update
 	set -e
 	apt -y install nextdom-common
 }
 
 function CHECK_APT_CONF() {
+	apt update
+	apt install -y software-properties-common gnupg wget ca-certificates
 	sed '/non-free/!s/main/main non-free/' /etc/apt/sources.list
 	CHECK_RETURN_KO "${?}" "Probleme lors de la modification /etc/apt/sources.list"
 	wget -qO - http://debian.nextdom.org/debian/nextdom.gpg.key | apt-key add -
