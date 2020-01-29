@@ -1,3 +1,5 @@
+[![CodeFactor](https://www.codefactor.io/repository/github/therealcorwin/nextdom_installer/badge)](https://www.codefactor.io/repository/github/therealcorwin/nextdom_installer)
+
 # NextDom_Installer
 
 Script to automaticaly install NextDom from APT or GIT
@@ -29,4 +31,4 @@ v1.8 : 20200108 : Add RPI compatibility
 V1.7 : 20200106 : Correction typo par GiDom  
 V1.6 : 20191230 : Transformation en fonctions par iWils  
 
-[![CodeFactor](https://www.codefactor.io/repository/github/therealcorwin/nextdom_installer/badge)](https://www.codefactor.io/repository/github/therealcorwin/nextdom_installer)
+
