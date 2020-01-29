@@ -28,3 +28,5 @@ V2.0 beta : USE A OWN RISK !!!!! :20200128
 v1.8 : 20200108 : Add RPI compatibility  
 V1.7 : 20200106 : Correction typo par GiDom  
 V1.6 : 20191230 : Transformation en fonctions par iWils  
+
+[![CodeFactor](https://www.codefactor.io/repository/github/therealcorwin/nextdom_installer/badge)](https://www.codefactor.io/repository/github/therealcorwin/nextdom_installer)
