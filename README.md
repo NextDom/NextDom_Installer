@@ -1,4 +1,7 @@
+
 # NextDom_Installer
+
+[![CodeFactor](https://www.codefactor.io/repository/github/therealcorwin/nextdom_installer/badge)](https://www.codefactor.io/repository/github/therealcorwin/nextdom_installer)
 
 Script to automaticaly install NextDom from APT or GIT
 
