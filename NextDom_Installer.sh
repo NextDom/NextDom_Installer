@@ -141,7 +141,7 @@ function INSTALL_NEXTDOM_DEV() {
 }
 function INSTALL_NEXTDOM_GIT() {
 	git clone --single-branch --branch "${GIT_NEXTDOM_BRANCHE}" "${GIT_NEXTDOM_URL}" "${NEXTDOM_HTML}"
-	CHECK_RETURN_KO "${?}" "Probleme lors du git clone pour la branche "${GIT_NEXTDOM_BRANCHE}", du depot "${GIT_NEXTDOM_URL}""
+	CHECK_RETURN_KO "${?}" "Probleme lors du git clone pour la branche ${GIT_NEXTDOM_BRANCHE}, du depot ${GIT_NEXTDOM_URL}"
 	git config --global core.fileMode false
 	."${NEXTDOM_HTML}"/install/postinst
 	CHECK_RETURN_KO "${?}" "Probleme lors du postinstall"
