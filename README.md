@@ -9,7 +9,7 @@ Be carreful, it will wipe all previous data and backup of NextDom
 
 To run :
 
- `$ wget https://raw.githubusercontent.com/NextDom/NextDom_Installer/master/NextDom_Installer.sh`  
+ `$ wget https://raw.githubusercontent.com/NextDom/NextDom_Installer/Therealcorwin/NextDom_Installer.sh`  
  `$ sudo chmod +x NextDom_Installer.sh`  
  `$ sudo ./NextDom_Installer.sh -opt -arg`  
 
