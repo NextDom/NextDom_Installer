@@ -11,6 +11,9 @@ NEXTDOM_LIB="/var/lib/nextdom"
 NEXTDOM_HTML="/var/www/html"
 NEXTDOM_SHARE="/usr/share/nextdom"
 NEXTDOM_TMP="/tmp/nextdom"
+NEXTDOM_REMOVE_ALL="NO"
+NEXTDOM_RESTORE_BCKP="NA"
+NEXTDOM_ARCHIVE_DIRECTORY="NA"
 APT_INSTALL_TYPE="NA"
 APT_NEXTDOM_CONF="/etc/apt/sources.list.d/nextdom.list"
 GIT_NEXTDOM_URL="NA"
@@ -53,7 +56,7 @@ if [ -z "$1" ]; then
 	usage
 	exit
 else
-	while getopts a:g:b:s: options; do
+	while getopts a:g:b:s:r:i: options; do
 		case ${options} in
 		"a")
 			APT_INSTALL_TYPE="${OPTARG}"
@@ -69,6 +72,13 @@ else
 		"s")
 			GIT_SWITCH_BRANCHE="${OPTARG}"
 			NEXTDOM_TYPE_INSTALL=3
+			;;
+		"r")
+			NEXTDOM_REMOVE_ALL="NO"
+			;;
+		"i")
+			NEXTDOM_RESTORE_BCKP="NA"
+			NEXTDOM_ARCHIVE_DIRECTORY="${OPTARG}"
 			;;
 		*)
 			echo "Option invalide"
@@ -147,7 +157,7 @@ function INSTALL_NEXTDOM_GIT() {
 	git clone --single-branch --branch "${GIT_NEXTDOM_BRANCHE}" "${GIT_NEXTDOM_URL}" "${NEXTDOM_HTML}"
 	CHECK_RETURN_KO "${?}" "Probleme lors du git clone pour la branche ${GIT_NEXTDOM_BRANCHE}, du depot ${GIT_NEXTDOM_URL}"
 	git config --global core.fileMode false
-	."${NEXTDOM_HTML}"/install/postinst
+	bash "${NEXTDOM_HTML}"/install/postinst
 	CHECK_RETURN_KO "${?}" "Probleme lors du postinstall"
 }
 
@@ -157,7 +167,7 @@ function NEXTDOM_SWITCH_BRANCHE() {
 	echo "passage à la branche " "${GIT_NEXTDOM_BRANCHE}"
 	git checkout "${GIT_NEXTDOM_BRANCHE}"
 	git reset --hard origin/"${GIT_NEXTDOM_BRANCHE}"
-	."${NEXTDOM_HTML}"/install/postinst
+	bash "${NEXTDOM_HTML}"/install/postinst
 }
 
 function DEL_NEXTDOM_DIR() {
@@ -174,6 +184,19 @@ function DEL_NEXTDOM_DIR() {
 function REMOVE_NEXTDOM_APT() {
 
 	(apt purge -y nextdom nextdom-common && apt autoremove -y)
+	CHECK_RETURN_KO "${?}" "Probleme lors de la suppression des packets nextdom et de leurs dependances"
+}
+
+function RESTORE_BACKUP_CHECK_ARCHIVE() {
+	if [ "${NEXTDOM_ARCHIVE_DIRECTORY##*.}" != ".tar.gz" ]; then
+		echo "veuillez indiquer une archive valide (ie : /home/toto/Mon_Backup.tar.gz)"
+		usage
+		exit
+	fi
+}
+function RESTORE_BACKUP_NEXTDOM() {
+
+	sudo -u www-data php ${NEXTDOM_HTML}/install php file="${NEXTDOM_ARCHIVE_DIRECTORY}"
 	CHECK_RETURN_KO "${?}" "Probleme lors de la suppression des packets nextdom et de leurs dependances"
 }
 
