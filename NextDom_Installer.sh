@@ -241,6 +241,7 @@ case "${NEXTDOM_TYPE_INSTALL}" in
     NEXTDOM_SWITCH_BRANCHE
     ;;
 *)
+
     echo "default"
     ;;
 esac
