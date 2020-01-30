@@ -15,7 +15,7 @@ To run :
 
 Type -? or -help to know how use it
 
-V2.0 beta : USE A OWN RISK !!!!! :20200128
+V2.0 beta : USE AT YOUR OWN RISK !!!!! :20200128
 
 - Refonte globale du script
 - utilisation de variable globale pour faciliter la maintenabilité
