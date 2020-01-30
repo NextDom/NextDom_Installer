@@ -52,67 +52,6 @@ function usage() {
 
 }
 
-if [ -z "$1" ]; then
-	usage
-	exit
-else
-	while getopts a:g:b:s:r:i: options; do
-		case ${options} in
-		"a")
-			APT_INSTALL_TYPE="${OPTARG}"
-			NEXTDOM_TYPE_INSTALL=1
-			;;
-		"g")
-			GIT_NEXTDOM_URL="${OPTARG}"
-			NEXTDOM_TYPE_INSTALL=2
-			;;
-		"b")
-			GIT_NEXTDOM_BRANCHE="${OPTARG}"
-			;;
-		"s")
-			GIT_SWITCH_BRANCHE="${OPTARG}"
-			NEXTDOM_TYPE_INSTALL=3
-			;;
-		"r")
-			NEXTDOM_REMOVE_ALL="NO"
-			;;
-		"i")
-			RESTORE_BACKUP_CHECK_ARCHIVE
-			NEXTDOM_RESTORE_BCKP="NA"
-			NEXTDOM_ARCHIVE_DIRECTORY="${OPTARG}"
-			;;
-		*)
-			echo "Option invalide"
-			usage
-			exit 1
-			;;
-		esac
-	done
-fi
-
-# CHECK SI CHOIX APT & GIT NE SONT PAS VALORISES
-if { [ "${GIT_NEXTDOM_URL}" != "NA" ] || [ "${GIT_NEXTDOM_BRANCHE}" != "NA" ]; } && [ "${APT_INSTALL_TYPE}" != "NA" ]; then
-	echo "soit git soit apt mais pas les deux"
-	usage
-	exit 1
-fi
-CHECK_RETURN_KO "${?}" "Probleme lors de la verification des variables APT et GIT"
-
-# CHECK SI CHOIX GIT & SWITCH NE SONT PAS VALORISES
-if { [ "${GIT_NEXTDOM_URL}" != "NA" ] || [ "${GIT_NEXTDOM_BRANCHE}" != "NA" ]; } && [ "${GIT_SWITCH_BRANCHE}" != "NA" ]; then
-	echo "soit git soit switch"
-	usage
-	exit 1
-fi
-CHECK_RETURN_KO "${?}" "Probleme lors de la verification des variables GIT et Switch"
-
-# CHECK SI CHOIX APT & SWITCH NE SONT PAS VALORISES
-if [ "${APT_INSTALL_TYPE}" != "NA" ] && [ "${GIT_SWITCH_BRANCHE}" != "NA" ]; then
-	echo "soit apt soit switch"
-	usage
-	exit 1
-fi
-CHECK_RETURN_KO "${?}" "Probleme lors de la verification des variables APT et Switch"
 
 function INIT_NEXDOM_ENV() {
 	apt update
@@ -200,6 +139,70 @@ function RESTORE_BACKUP_NEXTDOM() {
 	sudo -u www-data php ${NEXTDOM_HTML}/install php file="${NEXTDOM_ARCHIVE_DIRECTORY}"
 	CHECK_RETURN_KO "${?}" "Probleme lors de la suppression des packets nextdom et de leurs dependances"
 }
+
+if [ -z "$1" ]; then
+	usage
+	exit
+else
+	while getopts a:g:b:s:r:i: options; do
+		case ${options} in
+		"a")
+			APT_INSTALL_TYPE="${OPTARG}"
+			NEXTDOM_TYPE_INSTALL=1
+			;;
+		"g")
+			GIT_NEXTDOM_URL="${OPTARG}"
+			NEXTDOM_TYPE_INSTALL=2
+			;;
+		"b")
+			GIT_NEXTDOM_BRANCHE="${OPTARG}"
+			;;
+		"s")
+			GIT_SWITCH_BRANCHE="${OPTARG}"
+			NEXTDOM_TYPE_INSTALL=3
+			;;
+		"r")
+			NEXTDOM_REMOVE_ALL="NO"
+			;;
+		"i")
+			RESTORE_BACKUP_CHECK_ARCHIVE
+			NEXTDOM_RESTORE_BCKP="NA"
+			NEXTDOM_ARCHIVE_DIRECTORY="${OPTARG}"
+			;;
+		*)
+			echo "Option invalide"
+			usage
+			exit 1
+			;;
+		esac
+	done
+fi
+
+# CHECK SI CHOIX APT & GIT NE SONT PAS VALORISES
+if { [ "${GIT_NEXTDOM_URL}" != "NA" ] || [ "${GIT_NEXTDOM_BRANCHE}" != "NA" ]; } && [ "${APT_INSTALL_TYPE}" != "NA" ]; then
+	echo "soit git soit apt mais pas les deux"
+	usage
+	exit 1
+fi
+CHECK_RETURN_KO "${?}" "Probleme lors de la verification des variables APT et GIT"
+
+# CHECK SI CHOIX GIT & SWITCH NE SONT PAS VALORISES
+if { [ "${GIT_NEXTDOM_URL}" != "NA" ] || [ "${GIT_NEXTDOM_BRANCHE}" != "NA" ]; } && [ "${GIT_SWITCH_BRANCHE}" != "NA" ]; then
+	echo "soit git soit switch"
+	usage
+	exit 1
+fi
+CHECK_RETURN_KO "${?}" "Probleme lors de la verification des variables GIT et Switch"
+
+# CHECK SI CHOIX APT & SWITCH NE SONT PAS VALORISES
+if [ "${APT_INSTALL_TYPE}" != "NA" ] && [ "${GIT_SWITCH_BRANCHE}" != "NA" ]; then
+	echo "soit apt soit switch"
+	usage
+	exit 1
+fi
+CHECK_RETURN_KO "${?}" "Probleme lors de la verification des variables APT et Switch"
+
+
 
 case "${NEXTDOM_TYPE_INSTALL}" in
 1)
