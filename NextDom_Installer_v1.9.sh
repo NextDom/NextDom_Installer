@@ -1,6 +1,7 @@
 #!/bin/bash
 
-#2020-01-08 : v1.9 : modification chemin pout tirage des sources
+#2020-01-08 : v1.9a : on purge avant la suppression des dossiers
+#2020-01-08 : v1.9 : modification chemin pour tirage des sources
 #2020-01-08 : v1.8 : ajout compatibilité RPI
 #2020-01-05 : v1.7 : Correction Typo
 #2019-12-30 : v1.6 : mise en place de fonction
@@ -67,8 +68,8 @@ function basenxt {
 }
 
 if [[ $1 == "-git" ]]; then
-	cleanfld
 	cleannxt
+	cleanfld
 	basenxt $1
 
 	cd /usr/share/nextdom
@@ -78,8 +79,8 @@ if [[ $1 == "-git" ]]; then
 fi
 
 if [[ $1 == "-apt" ]]; then
-	cleanfld
 	cleannxt
+	cleanfld
 	basenxt $1
 
 	if [ $2 == "" ]; then
@@ -105,8 +106,8 @@ if [[ $1 == "-apt" ]]; then
 fi
 
 if [[ $1 == "-gitbr" ]]; then
-	cleanfld
 	cleannxt
+	cleanfld
 	basenxt $1
 
 	cd /usr/share/nextdom
