@@ -6,23 +6,26 @@
 #2019-11-26 : v1.5 : correction de l'ordre d'installation des dépendances.
 #2019-11-25 : v1.3 : ajout dépôt pour install git + clé
 VERSION_SCRIPT="V2.0 BETA USE AT OWN RISK"
-NEXTDOM_LOG="/var/log/nextdom"
-NEXTDOM_LIB="/var/lib/nextdom"
-NEXTDOM_HTML="/var/www/html"
-NEXTDOM_SHARE="/usr/share/nextdom"
-NEXTDOM_TMP="/tmp/nextdom"
+
+NEXTDOM_DIR_LOG="/var/log/nextdom"
+NEXTDOM_DIR_LIB="/var/lib/nextdom"
+NEXTDOM_DIR_HTML="/var/www/html"
+NEXTDOM_DIR_SHARE="/usr/share/nextdom"
+NEXTDOM_DIR_TMP="/tmp/nextdom"
+NEXTDOM_DIR_ARCHIVE="NA"
 NEXTDOM_REMOVE_ALL="NO"
 NEXTDOM_RESTORE_BCKP="NO"
-NEXTDOM_ARCHIVE_DIRECTORY="NA"
+NEXTDOM_TYPE_INSTALL="0"
+
 APT_INSTALL_TYPE="NA"
 APT_NEXTDOM_CONF="/etc/apt/sources.list.d/nextdom.list"
-GIT_NEXTDOM_URL="NA"
-GIT_NEXTDOM_BRANCHE="NA"
-GIT_SWITCH_BRANCHE="NA"
-NEXTDOM_TYPE_INSTALL="0"
 APT_NEXTDOM_DEPOT_OFI="http://debian.nextdom.org/debian"
 APT_NEXTDOM_DEPOT_NGT="http://debian-nightly.nextdom.org/debian"
 APT_NEXTDOM_DEPOT_DEV="http://debian-dev.nextdom.org/debian"
+
+GIT_NEXTDOM_URL="NA"
+GIT_NEXTDOM_BRANCHE="NA"
+GIT_SWITCH_BRANCHE="NA"
 
 function CHECK_RETURN_KO() {
     # Function. Parameter 1 is the return code
@@ -78,40 +81,38 @@ function CHECK_APT_CONF() {
 }
 
 function INSTALL_NEXTDOM_OFI() {
-    #INIT_NEXDOM_ENV "${APT_NEXTDOM_DEPOT_OFI}"
     set -e
     apt install -y nextdom
 }
 function INSTALL_NEXTDOM_NGT() {
-    #INIT_NEXDOM_ENV "${APT_NEXTDOM_DEPOT_NGT}"
     set -e
     apt install -y nextdom
 }
 function INSTALL_NEXTDOM_DEV() {
-    #INIT_NEXDOM_ENV "${APT_NEXTDOM_DEPOT_DEV}"
     set -e
     apt install -y nextdom
 }
+
 function INSTALL_NEXTDOM_GIT() {
-    git clone --single-branch --branch "${GIT_NEXTDOM_BRANCHE}" "${GIT_NEXTDOM_URL}" "${NEXTDOM_HTML}"
+    git clone --single-branch --branch "${GIT_NEXTDOM_BRANCHE}" "${GIT_NEXTDOM_URL}" "${NEXTDOM_DIR_HTML}"
     CHECK_RETURN_KO "${?}" "Probleme lors du git clone pour la branche ${GIT_NEXTDOM_BRANCHE}, du depot ${GIT_NEXTDOM_URL}"
     git config --global core.fileMode false
-    bash "${NEXTDOM_HTML}"/install/postinst
+    bash "${NEXTDOM_DIR_HTML}"/install/postinst
     CHECK_RETURN_KO "${?}" "Probleme lors du postinstall"
 }
 
 function NEXTDOM_SWITCH_BRANCHE() {
-    git clone --single-branch --branch "${GIT_NEXTDOM_BRANCHE}" "${GIT_NEXTDOM_URL}" "${NEXTDOM_HTML}"
-    git config core.fileMode false
+    git clone --single-branch --branch "${GIT_NEXTDOM_BRANCHE}" "${GIT_NEXTDOM_URL}" "${NEXTDOM_DIR_HTML}"
+    git config --global core.fileMode false
     echo "passage à la branche " "${GIT_NEXTDOM_BRANCHE}"
-    git checkout "${GIT_NEXTDOM_BRANCHE}"
-    git reset --hard origin/"${GIT_NEXTDOM_BRANCHE}"
-    bash "${NEXTDOM_HTML}"/install/postinst
+    git checkout --path "${NEXTDOM_DIR_HTML}"/ "${GIT_NEXTDOM_BRANCHE}"
+    git reset --hard --path "${NEXTDOM_DIR_HTML}"/ origin/"${GIT_NEXTDOM_BRANCHE}"
+    bash "${NEXTDOM_DIR_HTML}"/install/postinst
 }
 
 function DEL_NEXTDOM_DIR() {
 
-    for RM_NEXTDOM_DIR in ${NEXTDOM_LOG} ${NEXTDOM_LIB} ${NEXTDOM_HTML} ${NEXTDOM_SHARE} ${NEXTDOM_TMP}; do
+    for RM_NEXTDOM_DIR in ${NEXTDOM_DIR_LOG} ${NEXTDOM_DIR_LIB} ${NEXTDOM_DIR_HTML} ${NEXTDOM_DIR_SHARE} ${NEXTDOM_DIR_TMP}; do
         if [ -d ${RM_NEXTDOM_DIR} ]; then
             rm -Rf ${RM_NEXTDOM_DIR}
             echo "Repertoire  ${RM_NEXTDOM_DIR} : supprime"
@@ -127,19 +128,26 @@ function REMOVE_NEXTDOM_APT() {
 }
 
 function RESTORE_BACKUP_CHECK_ARCHIVE() {
-    if [ "${NEXTDOM_ARCHIVE_DIRECTORY: -7}" != ".tar.gz" ]; then
+    if [ "${NEXTDOM_DIR_ARCHIVE: -7}" != ".tar.gz" ]; then
         echo "veuillez indiquer une archive valide (ie : /home/toto/Mon_Backup.tar.gz)"
         usage
         exit
+    else
+        if [ ! -e "${NEXTDOM_DIR_ARCHIVE}" ]; then
+            echo "Le fichier ${NEXTDOM_DIR_ARCHIVE} n'existe pas"
+            usage
+            exit
+        fi
+
     fi
 }
 function RESTORE_BACKUP_NEXTDOM() {
 
-    sudo -u www-data php ${NEXTDOM_HTML}/install php file="${NEXTDOM_ARCHIVE_DIRECTORY}"
+    sudo -u www-data php ${NEXTDOM_DIR_HTML}/install php file="${NEXTDOM_DIR_ARCHIVE}"
     CHECK_RETURN_KO "${?}" "Probleme lors de la restauration du backup"
 }
 
-if [ "$NEXTDOM_REMOVE_ALL" = "YES" ]; then
+if [ "${NEXTDOM_REMOVE_ALL}" = "YES" ]; then
 
     REMOVE_NEXTDOM_APT
     DEL_NEXTDOM_DIR
@@ -172,7 +180,7 @@ else
         "i")
             RESTORE_BACKUP_CHECK_ARCHIVE
             NEXTDOM_RESTORE_BCKP="${OPTARG}"
-            NEXTDOM_ARCHIVE_DIRECTORY="${OPTARG}"
+            NEXTDOM_DIR_ARCHIVE="${OPTARG}"
             ;;
         *)
             echo "Option invalide"
@@ -207,6 +215,12 @@ if [ "${APT_INSTALL_TYPE}" != "NA" ] && [ "${GIT_SWITCH_BRANCHE}" != "NA" ]; the
 fi
 CHECK_RETURN_KO "${?}" "Probleme lors de la verification des variables APT et Switch"
 
+if [ "$NEXTDOM_REMOVE_ALL" = "YES" ]; then
+
+    REMOVE_NEXTDOM_APT
+    DEL_NEXTDOM_DIR
+fi
+
 case "${NEXTDOM_TYPE_INSTALL}" in
 1)
     case "${APT_INSTALL_TYPE}" in
@@ -229,14 +243,10 @@ case "${NEXTDOM_TYPE_INSTALL}" in
 
     ;;
 2)
-    REMOVE_NEXTDOM_APT
-    DEL_NEXTDOM_DIR
     INIT_NEXDOM_ENV "${APT_NEXTDOM_DEPOT_OFI}"
     INSTALL_NEXTDOM_GIT
     ;;
 3)
-    REMOVE_NEXTDOM_APT
-    DEL_NEXTDOM_DIR
     INIT_NEXDOM_ENV "${APT_NEXTDOM_DEPOT_OFI}"
     NEXTDOM_SWITCH_BRANCHE
     ;;
@@ -246,7 +256,7 @@ case "${NEXTDOM_TYPE_INSTALL}" in
     ;;
 esac
 
-if [ "$NEXTDOM_RESTORE_BCKP" = "YES" ]; then
+if [ "${NEXTDOM_RESTORE_BCKP}" = "YES" ]; then
 
     RESTORE_BACKUP_NEXTDOM
 fi
