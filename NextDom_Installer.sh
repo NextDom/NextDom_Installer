@@ -27,6 +27,8 @@ GIT_NEXTDOM_URL="NA"
 GIT_NEXTDOM_BRANCHE="NA"
 GIT_SWITCH_BRANCHE="NA"
 
+OS_RELEASE="/mnt/f/Projet/DEV/Shell/NextDom_Installer/test/etc/os-release"
+
 function CHECK_RETURN_KO() {
     # Function. Parameter 1 is the return code
     # Para. 2 is text to display on failure.
@@ -40,29 +42,30 @@ function CHECK_RETURN_KO() {
 function usage() {
 
     echo ""
-    echo "		 NextDom Installer tool " ${VERSION_SCRIPT}
+    echo "		 NextDom Installer tool " "${VERSION_SCRIPT}"
     echo ""
     echo ""
     echo "	NextDom_Installer.sh -a OFI|NGT|DEV -g url_github -b BRANCHE -s BRANCHE -r YES -i CHEMIN_BACKUP"
     echo ""
-    echo "		-a) : Installation via apt pour les depots Officiels (OFI), dev (DEV), et nigthly (NGT)"
+    echo "		-a) : Installation via apt pour les depots Officiels (OFI), dev (DEV), et nightly (NGT)"
     echo "		-g & -b ) : Indique l url github du projet et de la branche a installer"
     echo "		-s) : La branche du projet sur laquelle l utilisateur veut switcher"
-    echo "      -r) : Suppression de tout les composants Nextdom et data (Comming Soon)"
+    echo "      -r) : Suppression de tout les composants Nextdom et data (Coming Soon)"
     echo "      -i) : Restauration de backup (Coming Soon)"
     echo ""
     echo "		-? ou -help				: Affiche l'aide et quitter"
 
 }
 
-function INIT_NEXDOM_ENV() {
+function INIT_NEXTDOM_ENV() {
     apt update
     apt install -y software-properties-common gnupg wget ca-certificates
     sed '/non-free/!s/main/main non-free/' /etc/apt/sources.list
-    CHECK_RETURN_KO "${?}" "Probleme lors de la modification /etc/apt/sources.list"
+    CHECK_RETURN_KO "${?}" "Problème lors de la modification /etc/apt/sources.list"
     wget -qO - http://debian.nextdom.org/debian/nextdom.gpg.key | apt-key add -
     echo "deb ${1} nextdom main" >/etc/apt/sources.list.d/nextdom.list
-    CHECK_RETURN_KO "${?}" "Probleme lors de la creation du fichier : ${APT_NEXTDOM_CONF}"
+    CHECK_RETURN_KO "${?}" "Problème lors de la creation du fichier : ${APT_NEXTDOM_CONF}"
+    CHECK_RASPBIAN
     apt update
     set -e
     apt -y install nextdom-common
@@ -72,13 +75,34 @@ function CHECK_APT_CONF() {
     apt update
     apt install -y software-properties-common gnupg wget ca-certificates
     sed '/non-free/!s/main/main non-free/' /etc/apt/sources.list
-    CHECK_RETURN_KO "${?}" "Probleme lors de la modification /etc/apt/sources.list"
+    CHECK_RETURN_KO "${?}" "Problème lors de la modification /etc/apt/sources.list"
     wget -qO - http://debian.nextdom.org/debian/nextdom.gpg.key | apt-key add -
     echo "deb ${1} nextdom main" >/etc/apt/sources.list.d/nextdom.list
-    CHECK_RETURN_KO "${?}" "Probleme lors de la creation du fichier : ${APT_NEXTDOM_CONF}"
+    CHECK_RETURN_KO "${?}" "Problème lors de la creation du fichier : ${APT_NEXTDOM_CONF}"
+    CHECK_RASPBIAN
     apt update
-    CHECK_RETURN_KO "${?}" "Probleme lors de l'apt update"
+    CHECK_RETURN_KO "${?}" "Problème lors de l'apt update"
 }
+
+function CHECK_RASPBIAN() {
+
+    if [ -f "${OS_RELEASE}" ]; then
+
+        if [ "$(grep -w VERSION_ID ${OS_RELEASE})" == "VERSION_ID=\"10\"" ] && [ "$(grep -w ID ${OS_RELEASE})" == "ID=raspbian" ]; then
+
+            wget -q https://ftp-master.debian.org/keys/release-10.asc -O- | apt-key add -
+            echo "deb http://deb.debian.org/debian buster non-free" >>/etc/apt/sources.list
+            CHECK_RETURN_KO "${?}" "Problème lors de la mise a jour des depots dans : /etc/apt/sources.list"
+
+        else
+            echo "impossible de detecter la version du systeme"
+        fi
+    else
+        echo "impossible de detecter la version du systeme"
+    fi
+
+}
+CHECK_RASPBIAN
 
 function INSTALL_NEXTDOM_OFI() {
     set -e
@@ -95,10 +119,10 @@ function INSTALL_NEXTDOM_DEV() {
 
 function INSTALL_NEXTDOM_GIT() {
     git clone --single-branch --branch "${GIT_NEXTDOM_BRANCHE}" "${GIT_NEXTDOM_URL}" "${NEXTDOM_DIR_HTML}"
-    CHECK_RETURN_KO "${?}" "Probleme lors du git clone pour la branche ${GIT_NEXTDOM_BRANCHE}, du depot ${GIT_NEXTDOM_URL}"
+    CHECK_RETURN_KO "${?}" "Problème lors du git clone pour la branche ${GIT_NEXTDOM_BRANCHE}, du depot ${GIT_NEXTDOM_URL}"
     git config --global core.fileMode false
     bash "${NEXTDOM_DIR_HTML}"/install/postinst
-    CHECK_RETURN_KO "${?}" "Probleme lors du postinstall"
+    CHECK_RETURN_KO "${?}" "Problème lors du postinstall"
 }
 
 function NEXTDOM_SWITCH_BRANCHE() {
@@ -115,8 +139,9 @@ function DEL_NEXTDOM_DIR() {
     for RM_NEXTDOM_DIR in ${NEXTDOM_DIR_LOG} ${NEXTDOM_DIR_LIB} ${NEXTDOM_DIR_HTML} ${NEXTDOM_DIR_SHARE} ${NEXTDOM_DIR_TMP}; do
         if [ -d ${RM_NEXTDOM_DIR} ]; then
             rm -Rf ${RM_NEXTDOM_DIR}
+            CHECK_RETURN_KO "${?}" "Problème lors de la suppression du repertoire : ${RM_NEXTDOM_DIR}"
             echo "Repertoire  ${RM_NEXTDOM_DIR} : supprime"
-            CHECK_RETURN_KO "${?}" "Probleme lors de la suppression du repertoire : ${RM_NEXTDOM_DIR}"
+
         fi
     done
 }
@@ -124,7 +149,7 @@ function DEL_NEXTDOM_DIR() {
 function REMOVE_NEXTDOM_APT() {
 
     (apt purge -y nextdom nextdom-common && apt autoremove -y)
-    CHECK_RETURN_KO "${?}" "Probleme lors de la suppression des packets nextdom et de leurs dependances"
+    CHECK_RETURN_KO "${?}" "Problème lors de la suppression des packets nextdom et de leurs dépendances"
 }
 
 function RESTORE_BACKUP_CHECK_ARCHIVE() {
@@ -144,7 +169,7 @@ function RESTORE_BACKUP_CHECK_ARCHIVE() {
 function RESTORE_BACKUP_NEXTDOM() {
 
     sudo -u www-data php ${NEXTDOM_DIR_HTML}/install php file="${NEXTDOM_DIR_ARCHIVE}"
-    CHECK_RETURN_KO "${?}" "Probleme lors de la restauration du backup"
+    CHECK_RETURN_KO "${?}" "Problème lors de la restauration du backup"
 }
 
 if [ "${NEXTDOM_REMOVE_ALL}" = "YES" ]; then
@@ -197,7 +222,7 @@ if { [ "${GIT_NEXTDOM_URL}" != "NA" ] || [ "${GIT_NEXTDOM_BRANCHE}" != "NA" ]; }
     usage
     exit 1
 fi
-CHECK_RETURN_KO "${?}" "Probleme lors de la verification des variables APT et GIT"
+CHECK_RETURN_KO "${?}" "Problème lors de la verification des variables APT et GIT"
 
 # CHECK SI CHOIX GIT & SWITCH NE SONT PAS VALORISES
 if { [ "${GIT_NEXTDOM_URL}" != "NA" ] || [ "${GIT_NEXTDOM_BRANCHE}" != "NA" ]; } && [ "${GIT_SWITCH_BRANCHE}" != "NA" ]; then
@@ -205,7 +230,7 @@ if { [ "${GIT_NEXTDOM_URL}" != "NA" ] || [ "${GIT_NEXTDOM_BRANCHE}" != "NA" ]; }
     usage
     exit 1
 fi
-CHECK_RETURN_KO "${?}" "Probleme lors de la verification des variables GIT et Switch"
+CHECK_RETURN_KO "${?}" "Problème lors de la verification des variables GIT et Switch"
 
 # CHECK SI CHOIX APT & SWITCH NE SONT PAS VALORISES
 if [ "${APT_INSTALL_TYPE}" != "NA" ] && [ "${GIT_SWITCH_BRANCHE}" != "NA" ]; then
@@ -213,7 +238,7 @@ if [ "${APT_INSTALL_TYPE}" != "NA" ] && [ "${GIT_SWITCH_BRANCHE}" != "NA" ]; the
     usage
     exit 1
 fi
-CHECK_RETURN_KO "${?}" "Probleme lors de la verification des variables APT et Switch"
+CHECK_RETURN_KO "${?}" "Problème lors de la verification des variables APT et Switch"
 
 if [ "$NEXTDOM_REMOVE_ALL" = "YES" ]; then
 
@@ -243,11 +268,11 @@ case "${NEXTDOM_TYPE_INSTALL}" in
 
     ;;
 2)
-    INIT_NEXDOM_ENV "${APT_NEXTDOM_DEPOT_OFI}"
+    INIT_NEXTDOM_ENV "${APT_NEXTDOM_DEPOT_OFI}" INIT_NEXTDOM_ENV
     INSTALL_NEXTDOM_GIT
     ;;
 3)
-    INIT_NEXDOM_ENV "${APT_NEXTDOM_DEPOT_OFI}"
+    INIT_NEXTDOM_ENV "${APT_NEXTDOM_DEPOT_OFI}"
     NEXTDOM_SWITCH_BRANCHE
     ;;
 *)
