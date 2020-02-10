@@ -1,3 +1,10 @@
+
+
+TEST ONLY his script is used only by the NextDom team !
+
+
+
+
 # NextDom_Installer
 Script to automaticaly install NextDom from APT or GIT
 
