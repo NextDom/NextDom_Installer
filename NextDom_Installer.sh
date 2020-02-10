@@ -27,7 +27,7 @@ GIT_NEXTDOM_URL="NA"
 GIT_NEXTDOM_BRANCHE="NA"
 GIT_SWITCH_BRANCHE="NA"
 
-OS_RELEASE="/mnt/f/Projet/DEV/Shell/NextDom_Installer/test/etc/os-release"
+OS_RELEASE="/etc/os-release"
 
 function CHECK_RETURN_KO() {
     # Function. Parameter 1 is the return code
@@ -102,7 +102,6 @@ function CHECK_RASPBIAN() {
     fi
 
 }
-CHECK_RASPBIAN
 
 function INSTALL_NEXTDOM_OFI() {
     set -e
@@ -126,6 +125,12 @@ function INSTALL_NEXTDOM_GIT() {
 }
 
 function NEXTDOM_SWITCH_BRANCHE() {
+
+    if [ -d "${NEXTDOM_DIR_HTML}" ]; then
+        rm -Rf "${NEXTDOM_DIR_HTML}"
+        CHECK_RETURN_KO "${?}" "Problème lors de la suppression du repertoire ${NEXTDOM_DIR_HTML}"
+    fi
+
     git clone --single-branch --branch "${GIT_NEXTDOM_BRANCHE}" "${GIT_NEXTDOM_URL}" "${NEXTDOM_DIR_HTML}"
     git config --global core.fileMode false
     echo "passage à la branche " "${GIT_NEXTDOM_BRANCHE}"
@@ -186,25 +191,25 @@ else
         case ${options} in
         "a")
             APT_INSTALL_TYPE="${OPTARG}"
-            NEXTDOM_TYPE_INSTALL=1
+            NEXTDOM_TYPE_INSTALL="APT"
             ;;
         "g")
             GIT_NEXTDOM_URL="${OPTARG}"
-            NEXTDOM_TYPE_INSTALL=2
+            NEXTDOM_TYPE_INSTALL="GIT"
             ;;
         "b")
             GIT_NEXTDOM_BRANCHE="${OPTARG}"
             ;;
         "s")
             GIT_SWITCH_BRANCHE="${OPTARG}"
-            NEXTDOM_TYPE_INSTALL=3
+            NEXTDOM_TYPE_INSTALL="SWITCH"
             ;;
         "r")
             NEXTDOM_REMOVE_ALL="${OPTARG}"
             ;;
         "i")
             RESTORE_BACKUP_CHECK_ARCHIVE
-            NEXTDOM_RESTORE_BCKP="${OPTARG}"
+            NEXTDOM_RESTORE_BCKP="YES"
             NEXTDOM_DIR_ARCHIVE="${OPTARG}"
             ;;
         *)
@@ -247,7 +252,7 @@ if [ "$NEXTDOM_REMOVE_ALL" = "YES" ]; then
 fi
 
 case "${NEXTDOM_TYPE_INSTALL}" in
-1)
+APT)
     case "${APT_INSTALL_TYPE}" in
     OFI)
         CHECK_APT_CONF "${APT_NEXTDOM_DEPOT_OFI}"
@@ -267,11 +272,11 @@ case "${NEXTDOM_TYPE_INSTALL}" in
     esac
 
     ;;
-2)
+GIT)
     INIT_NEXTDOM_ENV "${APT_NEXTDOM_DEPOT_OFI}" INIT_NEXTDOM_ENV
     INSTALL_NEXTDOM_GIT
     ;;
-3)
+SWITCH)
     INIT_NEXTDOM_ENV "${APT_NEXTDOM_DEPOT_OFI}"
     NEXTDOM_SWITCH_BRANCHE
     ;;
