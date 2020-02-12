@@ -15,7 +15,7 @@ NEXTDOM_DIR_TMP="/tmp/nextdom"
 NEXTDOM_DIR_ARCHIVE="NA"
 NEXTDOM_REMOVE_ALL="NO"
 NEXTDOM_RESTORE_BCKP="NO"
-NEXTDOM_TYPE_INSTALL="0"
+NEXTDOM_TYPE_INSTALL="NA"
 
 APT_INSTALL_TYPE="NA"
 APT_NEXTDOM_CONF="/etc/apt/sources.list.d/nextdom.list"
@@ -28,6 +28,10 @@ GIT_NEXTDOM_BRANCHE="NA"
 GIT_SWITCH_BRANCHE="NA"
 
 OS_RELEASE="/etc/os-release"
+
+##TODO S'occuper de l'erreur : rm: impossible de supprimer '/tmp/nextdom': Périphérique ou ressource occupé
+##TODO Ameliorer detection systeme
+
 
 function CHECK_RETURN_KO() {
     # Function. Parameter 1 is the return code
@@ -50,8 +54,8 @@ function usage() {
     echo "		-a) : Installation via apt pour les depots Officiels (OFI), dev (DEV), et nightly (NGT)"
     echo "		-g & -b ) : Indique l url github du projet et de la branche a installer"
     echo "		-s) : La branche du projet sur laquelle l utilisateur veut switcher"
-    echo "      -r) : Suppression de tout les composants Nextdom et data (Coming Soon)"
-    echo "      -i) : Restauration de backup (Coming Soon)"
+    echo "      -r) : Suppression de tout les composants Nextdom et data "
+    echo "      -i) : Restauration de backup "
     echo ""
     echo "		-? ou -help				: Affiche l'aide et quitter"
 
@@ -95,10 +99,12 @@ function CHECK_RASPBIAN() {
             CHECK_RETURN_KO "${?}" "Problème lors de la mise a jour des depots dans : /etc/apt/sources.list"
 
         else
-            echo "impossible de detecter la version du systeme"
+            if [ "$(grep -w VERSION_ID ${OS_RELEASE})" == "VERSION_ID=\"10\"" ] && [ "$(grep -w ID ${OS_RELEASE})" == "ID=debian" ]; then
+                    echo "OS : DEBIAN"
+            fi
         fi
     else
-        echo "impossible de detecter la version du systeme"
+        echo "impossible de detecter la version du systeme ==> Installation Debian"
     fi
 
 }
@@ -208,9 +214,9 @@ else
             NEXTDOM_REMOVE_ALL="${OPTARG}"
             ;;
         "i")
+            NEXTDOM_DIR_ARCHIVE="${OPTARG}"
             RESTORE_BACKUP_CHECK_ARCHIVE
             NEXTDOM_RESTORE_BCKP="YES"
-            NEXTDOM_DIR_ARCHIVE="${OPTARG}"
             ;;
         *)
             echo "Option invalide"
