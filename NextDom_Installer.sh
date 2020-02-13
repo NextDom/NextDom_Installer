@@ -29,11 +29,11 @@ GIT_SWITCH_BRANCHE="NA"
 
 OS_RELEASE="/etc/os-release"
 
-##TODO S'occuper de l'erreur : rm: impossible de supprimer '/tmp/nextdom': Périphérique ou ressource occupé
 ##TODO Ameliorer detection systeme
-
+##TODO Ameliorer la fonction suppression des repertoires
 
 function CHECK_RETURN_KO() {
+
     # Function. Parameter 1 is the return code
     # Para. 2 is text to display on failure.
     if [ "${1}" -ne "0" ]; then
@@ -62,6 +62,7 @@ function usage() {
 }
 
 function INIT_NEXTDOM_ENV() {
+
     apt update
     apt install -y software-properties-common gnupg wget ca-certificates
     sed '/non-free/!s/main/main non-free/' /etc/apt/sources.list
@@ -76,6 +77,7 @@ function INIT_NEXTDOM_ENV() {
 }
 
 function CHECK_APT_CONF() {
+
     apt update
     apt install -y software-properties-common gnupg wget ca-certificates
     sed '/non-free/!s/main/main non-free/' /etc/apt/sources.list
@@ -100,7 +102,7 @@ function CHECK_RASPBIAN() {
 
         else
             if [ "$(grep -w VERSION_ID ${OS_RELEASE})" == "VERSION_ID=\"10\"" ] && [ "$(grep -w ID ${OS_RELEASE})" == "ID=debian" ]; then
-                    echo "OS : DEBIAN"
+                echo "OS : DEBIAN"
             fi
         fi
     else
@@ -110,19 +112,22 @@ function CHECK_RASPBIAN() {
 }
 
 function INSTALL_NEXTDOM_OFI() {
-    set -e
+
     apt install -y nextdom
 }
+
 function INSTALL_NEXTDOM_NGT() {
-    set -e
+
     apt install -y nextdom
 }
+
 function INSTALL_NEXTDOM_DEV() {
-    set -e
+    
     apt install -y nextdom
 }
 
 function INSTALL_NEXTDOM_GIT() {
+
     git clone --single-branch --branch "${GIT_NEXTDOM_BRANCHE}" "${GIT_NEXTDOM_URL}" "${NEXTDOM_DIR_HTML}"
     CHECK_RETURN_KO "${?}" "Problème lors du git clone pour la branche ${GIT_NEXTDOM_BRANCHE}, du depot ${GIT_NEXTDOM_URL}"
     git config --global core.fileMode false
@@ -143,11 +148,12 @@ function NEXTDOM_SWITCH_BRANCHE() {
     git checkout --path "${NEXTDOM_DIR_HTML}"/ "${GIT_NEXTDOM_BRANCHE}"
     git reset --hard --path "${NEXTDOM_DIR_HTML}"/ origin/"${GIT_NEXTDOM_BRANCHE}"
     bash "${NEXTDOM_DIR_HTML}"/install/postinst
+
 }
 
 function DEL_NEXTDOM_DIR() {
 
-    for RM_NEXTDOM_DIR in ${NEXTDOM_DIR_LOG} ${NEXTDOM_DIR_LIB} ${NEXTDOM_DIR_HTML} ${NEXTDOM_DIR_SHARE} ${NEXTDOM_DIR_TMP}; do
+    for RM_NEXTDOM_DIR in ${NEXTDOM_DIR_LOG} ${NEXTDOM_DIR_LIB} ${NEXTDOM_DIR_HTML} ${NEXTDOM_DIR_SHARE}; do
         if [ -d ${RM_NEXTDOM_DIR} ]; then
             rm -Rf ${RM_NEXTDOM_DIR}
             CHECK_RETURN_KO "${?}" "Problème lors de la suppression du repertoire : ${RM_NEXTDOM_DIR}"
@@ -155,15 +161,24 @@ function DEL_NEXTDOM_DIR() {
 
         fi
     done
+
+   if [ -d ${NEXTDOM_DIR_TMP} ]; then
+            rm -Rf "${NEXTDOM_DIR_TMP:?}"/*
+            echo "Repertoire  ${NEXTDOM_DIR_TMP} : supprime"
+
+        fi
+ 
 }
 
 function REMOVE_NEXTDOM_APT() {
 
     (apt purge -y nextdom nextdom-common && apt autoremove -y)
     CHECK_RETURN_KO "${?}" "Problème lors de la suppression des packets nextdom et de leurs dépendances"
+
 }
 
 function RESTORE_BACKUP_CHECK_ARCHIVE() {
+
     if [ "${NEXTDOM_DIR_ARCHIVE: -7}" != ".tar.gz" ]; then
         echo "veuillez indiquer une archive valide (ie : /home/toto/Mon_Backup.tar.gz)"
         usage
@@ -176,11 +191,13 @@ function RESTORE_BACKUP_CHECK_ARCHIVE() {
         fi
 
     fi
+
 }
 function RESTORE_BACKUP_NEXTDOM() {
 
-    sudo -u www-data php ${NEXTDOM_DIR_HTML}/install php file="${NEXTDOM_DIR_ARCHIVE}"
+    sudo -u www-data php ${NEXTDOM_DIR_HTML}/install/restore.php file="${NEXTDOM_DIR_ARCHIVE}"
     CHECK_RETURN_KO "${?}" "Problème lors de la restauration du backup"
+
 }
 
 if [ "${NEXTDOM_REMOVE_ALL}" = "YES" ]; then
