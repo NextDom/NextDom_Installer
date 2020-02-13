@@ -32,8 +32,6 @@ OS_RELEASE="/etc/os-release"
 ##TODO Ameliorer detection systeme
 ##TODO Ameliorer la fonction suppression des repertoires
 
-
-
 function CHECK_RETURN_KO() {
 
     # Function. Parameter 1 is the return code
@@ -289,18 +287,18 @@ fi
 case "${NEXTDOM_TYPE_INSTALL}" in
 APT)
     case "${APT_INSTALL_TYPE}" in
-    OFI|Ofi|ofi)
-                CHECK_APT_CONF "${APT_NEXTDOM_DEPOT_OFI}"
-                INSTALL_NEXTDOM_OFI
-                ;;
-    DEV|Dev|dev)
-                CHECK_APT_CONF "${APT_NEXTDOM_DEPOT_DEV}"
-                INSTALL_NEXTDOM_DEV
-                ;;
-    NGT|Ngt|ngt)
-                CHECK_APT_CONF "${APT_NEXTDOM_DEPOT_NGT}"
-                INSTALL_NEXTDOM_NGT
-                ;;
+    OFI | Ofi | ofi)
+        CHECK_APT_CONF "${APT_NEXTDOM_DEPOT_OFI}"
+        INSTALL_NEXTDOM_OFI
+        ;;
+    DEV | Dev | dev)
+        CHECK_APT_CONF "${APT_NEXTDOM_DEPOT_DEV}"
+        INSTALL_NEXTDOM_DEV
+        ;;
+    NGT | Ngt | ngt)
+        CHECK_APT_CONF "${APT_NEXTDOM_DEPOT_NGT}"
+        INSTALL_NEXTDOM_NGT
+        ;;
     *)
         echo "apt ko"
         ;;
@@ -308,7 +306,7 @@ APT)
 
     ;;
 GIT)
-    INIT_NEXTDOM_ENV "${APT_NEXTDOM_DEPOT_OFI}" 
+    INIT_NEXTDOM_ENV "${APT_NEXTDOM_DEPOT_OFI}"
     INSTALL_NEXTDOM_GIT
     ;;
 SWITCH)
