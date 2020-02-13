@@ -5,7 +5,7 @@
 #2019-12-30 : v1.6 : mise en place de fonction
 #2019-11-26 : v1.5 : correction de l'ordre d'installation des dépendances.
 #2019-11-25 : v1.3 : ajout dépôt pour install git + clé
-VERSION_SCRIPT="V2.0 BETA USE AT OWN RISK"
+VERSION_SCRIPT="V2.0 RC1"
 
 NEXTDOM_DIR_LOG="/var/log/nextdom"
 NEXTDOM_DIR_LIB="/var/lib/nextdom"
@@ -15,7 +15,7 @@ NEXTDOM_DIR_TMP="/tmp/nextdom"
 NEXTDOM_DIR_ARCHIVE="NA"
 NEXTDOM_REMOVE_ALL="NO"
 NEXTDOM_RESTORE_BCKP="NO"
-NEXTDOM_TYPE_INSTALL="0"
+NEXTDOM_TYPE_INSTALL="NA"
 
 APT_INSTALL_TYPE="NA"
 APT_NEXTDOM_CONF="/etc/apt/sources.list.d/nextdom.list"
@@ -27,9 +27,13 @@ GIT_NEXTDOM_URL="NA"
 GIT_NEXTDOM_BRANCHE="NA"
 GIT_SWITCH_BRANCHE="NA"
 
-OS_RELEASE="/mnt/f/Projet/DEV/Shell/NextDom_Installer/test/etc/os-release"
+OS_RELEASE="/etc/os-release"
+
+##TODO Ameliorer detection systeme
+##TODO Ameliorer la fonction suppression des repertoires
 
 function CHECK_RETURN_KO() {
+
     # Function. Parameter 1 is the return code
     # Para. 2 is text to display on failure.
     if [ "${1}" -ne "0" ]; then
@@ -50,14 +54,15 @@ function usage() {
     echo "		-a) : Installation via apt pour les depots Officiels (OFI), dev (DEV), et nightly (NGT)"
     echo "		-g & -b ) : Indique l url github du projet et de la branche a installer"
     echo "		-s) : La branche du projet sur laquelle l utilisateur veut switcher"
-    echo "      -r) : Suppression de tout les composants Nextdom et data (Coming Soon)"
-    echo "      -i) : Restauration de backup (Coming Soon)"
+    echo "      -r) : Suppression de tout les composants Nextdom et data "
+    echo "      -i) : Restauration de backup "
     echo ""
     echo "		-? ou -help				: Affiche l'aide et quitter"
 
 }
 
 function INIT_NEXTDOM_ENV() {
+
     apt update
     apt install -y software-properties-common gnupg wget ca-certificates
     sed '/non-free/!s/main/main non-free/' /etc/apt/sources.list
@@ -72,6 +77,7 @@ function INIT_NEXTDOM_ENV() {
 }
 
 function CHECK_APT_CONF() {
+
     apt update
     apt install -y software-properties-common gnupg wget ca-certificates
     sed '/non-free/!s/main/main non-free/' /etc/apt/sources.list
@@ -95,29 +101,38 @@ function CHECK_RASPBIAN() {
             CHECK_RETURN_KO "${?}" "Problème lors de la mise a jour des depots dans : /etc/apt/sources.list"
 
         else
-            echo "impossible de detecter la version du systeme"
+            if [ "$(grep -w VERSION_ID ${OS_RELEASE})" == "VERSION_ID=\"10\"" ] && [ "$(grep -w ID ${OS_RELEASE})" == "ID=debian" ]; then
+                echo "OS : DEBIAN"
+            fi
         fi
     else
-        echo "impossible de detecter la version du systeme"
+        echo "impossible de detecter la version du systeme ==> Installation Debian"
     fi
 
 }
-CHECK_RASPBIAN
 
 function INSTALL_NEXTDOM_OFI() {
-    set -e
+
     apt install -y nextdom
 }
+
 function INSTALL_NEXTDOM_NGT() {
-    set -e
+
     apt install -y nextdom
 }
+
 function INSTALL_NEXTDOM_DEV() {
-    set -e
+
     apt install -y nextdom
 }
 
 function INSTALL_NEXTDOM_GIT() {
+
+    if [ -d "${NEXTDOM_DIR_HTML}" ]; then
+        rm -Rf "${NEXTDOM_DIR_HTML}"
+        CHECK_RETURN_KO "${?}" "Problème lors de la suppression du repertoire ${NEXTDOM_DIR_HTML}"
+    fi
+
     git clone --single-branch --branch "${GIT_NEXTDOM_BRANCHE}" "${GIT_NEXTDOM_URL}" "${NEXTDOM_DIR_HTML}"
     CHECK_RETURN_KO "${?}" "Problème lors du git clone pour la branche ${GIT_NEXTDOM_BRANCHE}, du depot ${GIT_NEXTDOM_URL}"
     git config --global core.fileMode false
@@ -126,17 +141,24 @@ function INSTALL_NEXTDOM_GIT() {
 }
 
 function NEXTDOM_SWITCH_BRANCHE() {
+
+    if [ -d "${NEXTDOM_DIR_HTML}" ]; then
+        rm -Rf "${NEXTDOM_DIR_HTML}"
+        CHECK_RETURN_KO "${?}" "Problème lors de la suppression du repertoire ${NEXTDOM_DIR_HTML}"
+    fi
+
     git clone --single-branch --branch "${GIT_NEXTDOM_BRANCHE}" "${GIT_NEXTDOM_URL}" "${NEXTDOM_DIR_HTML}"
     git config --global core.fileMode false
     echo "passage à la branche " "${GIT_NEXTDOM_BRANCHE}"
     git checkout --path "${NEXTDOM_DIR_HTML}"/ "${GIT_NEXTDOM_BRANCHE}"
     git reset --hard --path "${NEXTDOM_DIR_HTML}"/ origin/"${GIT_NEXTDOM_BRANCHE}"
     bash "${NEXTDOM_DIR_HTML}"/install/postinst
+
 }
 
 function DEL_NEXTDOM_DIR() {
 
-    for RM_NEXTDOM_DIR in ${NEXTDOM_DIR_LOG} ${NEXTDOM_DIR_LIB} ${NEXTDOM_DIR_HTML} ${NEXTDOM_DIR_SHARE} ${NEXTDOM_DIR_TMP}; do
+    for RM_NEXTDOM_DIR in ${NEXTDOM_DIR_LOG} ${NEXTDOM_DIR_LIB} ${NEXTDOM_DIR_HTML} ${NEXTDOM_DIR_SHARE}; do
         if [ -d ${RM_NEXTDOM_DIR} ]; then
             rm -Rf ${RM_NEXTDOM_DIR}
             CHECK_RETURN_KO "${?}" "Problème lors de la suppression du repertoire : ${RM_NEXTDOM_DIR}"
@@ -144,32 +166,48 @@ function DEL_NEXTDOM_DIR() {
 
         fi
     done
+
+    if [ -d ${NEXTDOM_DIR_TMP} ]; then
+        rm -Rf "${NEXTDOM_DIR_TMP:?}"/*
+        echo "Repertoire  ${NEXTDOM_DIR_TMP} : supprime"
+
+    fi
+
 }
 
 function REMOVE_NEXTDOM_APT() {
 
     (apt purge -y nextdom nextdom-common && apt autoremove -y)
     CHECK_RETURN_KO "${?}" "Problème lors de la suppression des packets nextdom et de leurs dépendances"
+
 }
 
 function RESTORE_BACKUP_CHECK_ARCHIVE() {
-    if [ "${NEXTDOM_DIR_ARCHIVE: -7}" != ".tar.gz" ]; then
-        echo "veuillez indiquer une archive valide (ie : /home/toto/Mon_Backup.tar.gz)"
-        usage
-        exit
-    else
-        if [ ! -e "${NEXTDOM_DIR_ARCHIVE}" ]; then
-            echo "Le fichier ${NEXTDOM_DIR_ARCHIVE} n'existe pas"
+
+    if [[ "${NEXTDOM_DIR_ARCHIVE:0:1}" == / ]]; then
+        if [ "${NEXTDOM_DIR_ARCHIVE: -7}" != ".tar.gz" ]; then
+            echo "veuillez indiquer une archive valide (ie : /home/toto/Mon_Backup.tar.gz)"
             usage
             exit
+        else
+            if [ ! -e "${NEXTDOM_DIR_ARCHIVE}" ]; then
+                echo "Le fichier ${NEXTDOM_DIR_ARCHIVE} n'existe pas"
+                usage
+                exit
+            fi
         fi
-
+    else
+        usage
+        exit
     fi
+
 }
+
 function RESTORE_BACKUP_NEXTDOM() {
 
-    sudo -u www-data php ${NEXTDOM_DIR_HTML}/install php file="${NEXTDOM_DIR_ARCHIVE}"
+    sudo -u www-data php ${NEXTDOM_DIR_HTML}/install/restore.php file="${NEXTDOM_DIR_ARCHIVE}"
     CHECK_RETURN_KO "${?}" "Problème lors de la restauration du backup"
+
 }
 
 if [ "${NEXTDOM_REMOVE_ALL}" = "YES" ]; then
@@ -186,26 +224,26 @@ else
         case ${options} in
         "a")
             APT_INSTALL_TYPE="${OPTARG}"
-            NEXTDOM_TYPE_INSTALL=1
+            NEXTDOM_TYPE_INSTALL="APT"
             ;;
         "g")
             GIT_NEXTDOM_URL="${OPTARG}"
-            NEXTDOM_TYPE_INSTALL=2
+            NEXTDOM_TYPE_INSTALL="GIT"
             ;;
         "b")
             GIT_NEXTDOM_BRANCHE="${OPTARG}"
             ;;
         "s")
             GIT_SWITCH_BRANCHE="${OPTARG}"
-            NEXTDOM_TYPE_INSTALL=3
+            NEXTDOM_TYPE_INSTALL="SWITCH"
             ;;
         "r")
             NEXTDOM_REMOVE_ALL="${OPTARG}"
             ;;
         "i")
-            RESTORE_BACKUP_CHECK_ARCHIVE
-            NEXTDOM_RESTORE_BCKP="${OPTARG}"
             NEXTDOM_DIR_ARCHIVE="${OPTARG}"
+            RESTORE_BACKUP_CHECK_ARCHIVE
+            NEXTDOM_RESTORE_BCKP="YES"
             ;;
         *)
             echo "Option invalide"
@@ -247,17 +285,17 @@ if [ "$NEXTDOM_REMOVE_ALL" = "YES" ]; then
 fi
 
 case "${NEXTDOM_TYPE_INSTALL}" in
-1)
+APT)
     case "${APT_INSTALL_TYPE}" in
-    OFI)
+    OFI | Ofi | ofi)
         CHECK_APT_CONF "${APT_NEXTDOM_DEPOT_OFI}"
         INSTALL_NEXTDOM_OFI
         ;;
-    DEV)
+    DEV | Dev | dev)
         CHECK_APT_CONF "${APT_NEXTDOM_DEPOT_DEV}"
         INSTALL_NEXTDOM_DEV
         ;;
-    NGT)
+    NGT | Ngt | ngt)
         CHECK_APT_CONF "${APT_NEXTDOM_DEPOT_NGT}"
         INSTALL_NEXTDOM_NGT
         ;;
@@ -267,11 +305,11 @@ case "${NEXTDOM_TYPE_INSTALL}" in
     esac
 
     ;;
-2)
-    INIT_NEXTDOM_ENV "${APT_NEXTDOM_DEPOT_OFI}" INIT_NEXTDOM_ENV
+GIT)
+    INIT_NEXTDOM_ENV "${APT_NEXTDOM_DEPOT_OFI}"
     INSTALL_NEXTDOM_GIT
     ;;
-3)
+SWITCH)
     INIT_NEXTDOM_ENV "${APT_NEXTDOM_DEPOT_OFI}"
     NEXTDOM_SWITCH_BRANCHE
     ;;
