@@ -32,6 +32,8 @@ OS_RELEASE="/etc/os-release"
 ##TODO Ameliorer detection systeme
 ##TODO Ameliorer la fonction suppression des repertoires
 
+
+
 function CHECK_RETURN_KO() {
 
     # Function. Parameter 1 is the return code
@@ -122,11 +124,16 @@ function INSTALL_NEXTDOM_NGT() {
 }
 
 function INSTALL_NEXTDOM_DEV() {
-    
+
     apt install -y nextdom
 }
 
 function INSTALL_NEXTDOM_GIT() {
+
+    if [ -d "${NEXTDOM_DIR_HTML}" ]; then
+        rm -Rf "${NEXTDOM_DIR_HTML}"
+        CHECK_RETURN_KO "${?}" "Problème lors de la suppression du repertoire ${NEXTDOM_DIR_HTML}"
+    fi
 
     git clone --single-branch --branch "${GIT_NEXTDOM_BRANCHE}" "${GIT_NEXTDOM_URL}" "${NEXTDOM_DIR_HTML}"
     CHECK_RETURN_KO "${?}" "Problème lors du git clone pour la branche ${GIT_NEXTDOM_BRANCHE}, du depot ${GIT_NEXTDOM_URL}"
@@ -162,12 +169,12 @@ function DEL_NEXTDOM_DIR() {
         fi
     done
 
-   if [ -d ${NEXTDOM_DIR_TMP} ]; then
-            rm -Rf "${NEXTDOM_DIR_TMP:?}"/*
-            echo "Repertoire  ${NEXTDOM_DIR_TMP} : supprime"
+    if [ -d ${NEXTDOM_DIR_TMP} ]; then
+        rm -Rf "${NEXTDOM_DIR_TMP:?}"/*
+        echo "Repertoire  ${NEXTDOM_DIR_TMP} : supprime"
 
-        fi
- 
+    fi
+
 }
 
 function REMOVE_NEXTDOM_APT() {
@@ -179,29 +186,25 @@ function REMOVE_NEXTDOM_APT() {
 
 function RESTORE_BACKUP_CHECK_ARCHIVE() {
 
-if [[ "${NEXTDOM_DIR_ARCHIVE:0:1}" == / ]]
-then
-    echo "Absolute"
+    if [[ "${NEXTDOM_DIR_ARCHIVE:0:1}" == / ]]; then
         if [ "${NEXTDOM_DIR_ARCHIVE: -7}" != ".tar.gz" ]; then
-        echo "veuillez indiquer une archive valide (ie : /home/toto/Mon_Backup.tar.gz)"
-        usage
-        exit
-    else
-        if [ ! -e "${NEXTDOM_DIR_ARCHIVE}" ]; then
-            echo "Le fichier ${NEXTDOM_DIR_ARCHIVE} n'existe pas"
+            echo "veuillez indiquer une archive valide (ie : /home/toto/Mon_Backup.tar.gz)"
             usage
             exit
+        else
+            if [ ! -e "${NEXTDOM_DIR_ARCHIVE}" ]; then
+                echo "Le fichier ${NEXTDOM_DIR_ARCHIVE} n'existe pas"
+                usage
+                exit
+            fi
         fi
-
+    else
+        usage
+        exit
     fi
-else
-    echo "Relative"
-    usage
-fi
-
-
 
 }
+
 function RESTORE_BACKUP_NEXTDOM() {
 
     sudo -u www-data php ${NEXTDOM_DIR_HTML}/install/restore.php file="${NEXTDOM_DIR_ARCHIVE}"
@@ -286,18 +289,18 @@ fi
 case "${NEXTDOM_TYPE_INSTALL}" in
 APT)
     case "${APT_INSTALL_TYPE}" in
-    OFI)
-        CHECK_APT_CONF "${APT_NEXTDOM_DEPOT_OFI}"
-        INSTALL_NEXTDOM_OFI
-        ;;
-    DEV)
-        CHECK_APT_CONF "${APT_NEXTDOM_DEPOT_DEV}"
-        INSTALL_NEXTDOM_DEV
-        ;;
-    NGT)
-        CHECK_APT_CONF "${APT_NEXTDOM_DEPOT_NGT}"
-        INSTALL_NEXTDOM_NGT
-        ;;
+    OFI|Ofi|ofi)
+                CHECK_APT_CONF "${APT_NEXTDOM_DEPOT_OFI}"
+                INSTALL_NEXTDOM_OFI
+                ;;
+    DEV|Dev|dev)
+                CHECK_APT_CONF "${APT_NEXTDOM_DEPOT_DEV}"
+                INSTALL_NEXTDOM_DEV
+                ;;
+    NGT|Ngt|ngt)
+                CHECK_APT_CONF "${APT_NEXTDOM_DEPOT_NGT}"
+                INSTALL_NEXTDOM_NGT
+                ;;
     *)
         echo "apt ko"
         ;;
@@ -305,7 +308,7 @@ APT)
 
     ;;
 GIT)
-    INIT_NEXTDOM_ENV "${APT_NEXTDOM_DEPOT_OFI}" INIT_NEXTDOM_ENV
+    INIT_NEXTDOM_ENV "${APT_NEXTDOM_DEPOT_OFI}" 
     INSTALL_NEXTDOM_GIT
     ;;
 SWITCH)
