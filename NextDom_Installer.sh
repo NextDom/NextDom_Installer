@@ -5,7 +5,7 @@
 #2019-12-30 : v1.6 : mise en place de fonction
 #2019-11-26 : v1.5 : correction de l'ordre d'installation des dépendances.
 #2019-11-25 : v1.3 : ajout dépôt pour install git + clé
-VERSION_SCRIPT="V2.0 BETA USE AT OWN RISK"
+VERSION_SCRIPT="V2.0 RC1"
 
 NEXTDOM_DIR_LOG="/var/log/nextdom"
 NEXTDOM_DIR_LIB="/var/lib/nextdom"
@@ -179,7 +179,10 @@ function REMOVE_NEXTDOM_APT() {
 
 function RESTORE_BACKUP_CHECK_ARCHIVE() {
 
-    if [ "${NEXTDOM_DIR_ARCHIVE: -7}" != ".tar.gz" ]; then
+if [[ "${NEXTDOM_DIR_ARCHIVE:0:1}" == / ]]
+then
+    echo "Absolute"
+        if [ "${NEXTDOM_DIR_ARCHIVE: -7}" != ".tar.gz" ]; then
         echo "veuillez indiquer une archive valide (ie : /home/toto/Mon_Backup.tar.gz)"
         usage
         exit
@@ -191,6 +194,12 @@ function RESTORE_BACKUP_CHECK_ARCHIVE() {
         fi
 
     fi
+else
+    echo "Relative"
+    usage
+fi
+
+
 
 }
 function RESTORE_BACKUP_NEXTDOM() {
