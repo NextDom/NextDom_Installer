@@ -17,7 +17,7 @@ V2.0 beta : USE A OWN RISK !!!!! :20200128
 
 - Refonte globale du script
 - utilisation de variable globale pour faciliter la maintenabilité
-- 
+- Commentaire du code
 - Changement de l'appel du script:
 
 NextDom_Installer.sh -a OFI|NGT|DEV -g url_github -b BRANCHE -s BRANCHE -r YES -i /home/toto/monbackup.tar.gz
