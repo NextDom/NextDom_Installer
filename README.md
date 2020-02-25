@@ -7,13 +7,13 @@ Script to automaticaly install NextDom from APT or GIT
 
 To run :
 
- `$ wget https://raw.githubusercontent.com/NextDom/NextDom_Installer/Therealcorwin/NextDom_Installer.sh | chmod 750 NextDom_Installer.sh`
+
 
  `$ sudo ./NextDom_Installer.sh -opt arg -opt2 arg2 -opt3 arg3`  
 
 V2.0 RC1 : 20201402
 
-V2.0 beta : USE A OWN RISK !!!!! :20200128
+V2.0 beta : USE AT YOUR OWN RISK !!!!! :20200128
 
 - Refonte globale du script
 - utilisation de variable globale pour faciliter la maintenabilité
