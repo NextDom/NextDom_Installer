@@ -5,7 +5,7 @@
 #2019-12-30 : v1.6 : mise en place de fonction
 #2019-11-26 : v1.5 : correction de l'ordre d'installation des dépendances.
 #2019-11-25 : v1.3 : ajout dépôt pour install git + clé
-VERSION_SCRIPT="V2.0 RC1"
+VERSION_SCRIPT="V2.0_RC2"
 
 NEXTDOM_DIR_LOG="/var/log/nextdom"
 NEXTDOM_DIR_LIB="/var/lib/nextdom"
@@ -44,20 +44,28 @@ function CHECK_RETURN_KO() {
 }
 
 function usage() {
+clear
+printf "%*s\n" $(((100 + $(tput cols))/2)) "****************************************************************************************************"
+printf "%*s\n" $(((100 + $(tput cols))/2)) "*                                      NextDom Installer Tool                                      *"
+printf "%*s\n" $(((100 + $(tput cols))/2)) "*                                             ${VERSION_SCRIPT}                                             *"
+printf "%*s\n" $(((100 + $(tput cols))/2)) "****************************************************************************************************"
 
-    echo ""
-    echo "		 NextDom Installer tool " "${VERSION_SCRIPT}"
-    echo ""
-    echo ""
-    echo "	NextDom_Installer.sh -a OFI|NGT|DEV -g url_github -b BRANCHE -s BRANCHE -r YES -i CHEMIN_BACKUP"
-    echo ""
-    echo "		-a) : Installation via apt pour les depots Officiels (OFI), dev (DEV), et nightly (NGT)"
-    echo "		-g & -b ) : Indique l url github du projet et de la branche a installer"
-    echo "		-s) : La branche du projet sur laquelle l utilisateur veut switcher"
-    echo "      -r) : Suppression de tout les composants Nextdom et data "
-    echo "      -i) : Restauration de backup "
-    echo ""
-    echo "		-? ou -help				: Affiche l'aide et quitter"
+printf "%*s\n" $(((100 + $(tput cols))/2)) "****************************************************************************************************"
+printf "%*s\n" $(((100 + $(tput cols))/2)) "*                                           Utilisation                                            *"
+printf "%*s\n" $(((100 + $(tput cols))/2)) "*                                                                                                  *"
+printf "%*s\n" $(((100 + $(tput cols))/2)) "*  NextDom_Installer.sh -a OFI|NGT|DEV -g url_github -b BRANCHE -s BRANCHE -r YES -i CHEMIN_BACKUP *"
+printf "%*s\n" $(((100 + $(tput cols))/2)) "*     -a) : Installation via apt pour les depots Officiels (OFI), dev (DEV), et nightly (NGT)      *"
+printf "%*s\n" $(((100 + $(tput cols))/2)) "*  NextDom_Installer.sh -a OFI -r YES -i /home/toto/archive.tar.gz                                 *"
+printf "%*s\n" $(((100 + $(tput cols))/2)) "*     -g & -b ) : Indique l url github du projet et de la branche a installer                      *"
+printf "%*s\n" $(((100 + $(tput cols))/2)) "*  NextDom_Installer.sh -g https://github.com/NextDom/nextdom-core.git -b master                   *"
+printf "%*s\n" $(((100 + $(tput cols))/2)) "*     -s) : La branche du projet sur laquelle l utilisateur veut switcher                          *"
+printf "%*s\n" $(((100 + $(tput cols))/2)) "*  NextDom_Installer.sh -s Develop                                                                 *"
+printf "%*s\n" $(((100 + $(tput cols))/2)) "*     -r) : Suppression de tout les composants Nextdom et data                                     *"
+printf "%*s\n" $(((100 + $(tput cols))/2)) "*  NextDom_Installer.sh -r YES                                                                     *"
+printf "%*s\n" $(((100 + $(tput cols))/2)) "*     -i) : Restauration de backup                                                                 *"
+printf "%*s\n" $(((100 + $(tput cols))/2)) "*  NextDom_Installer.sh -i /home/toto/archive.tar.gz                                               *"
+printf "%*s\n" $(((100 + $(tput cols))/2)) "*     -? ou -help : Affiche l'aide et quitter                                                      *"
+printf "%*s\n" $(((100 + $(tput cols))/2)) "****************************************************************************************************"
 
 }
 
